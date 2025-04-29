@@ -1,0 +1,28 @@
+BEGIN CONSTS
+    int const_flight_phase_not_set 0
+    int const_flight_phase_cruise 1
+    int const_flight_phase_descent 2
+    int const_flight_phase_approach 3
+    int const_flight_phase_final_approach 4
+    int const_flight_phase_landing 5
+    string topic_camera_input topic_camera_input
+    bool const_true true
+    bool const_false false
+    int modality_fusion 0
+    int modality_rgb 1
+    string enhanced_rgb_topic /rgb_enhanced
+    string raw_rgb_topic /rgb_camera
+    double hb_freq_min 5.0
+    double node_freq_min 5.0
+END CONSTS
+BEGIN RULES
+    RULE init_sensor_fusion ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/sensor_fusion]
+    IF (current_phase == const_flight_phase_cruise)
+    THEN action_set_parameter modality modality_rgb
+
+    RULE activate_base_system ON_EVERY_TRIGGER
+    COMPONENTS [/managed_subsystem/camera, /managed_subsystem/sensor_fusion, /managed_subsystem/segmentation]
+    IF (current_phase == const_flight_phase_cruise)
+    THEN action_activate
+END RULES

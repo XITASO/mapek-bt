@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" project_name="Project">
+    <include path="main_bt.xml"/>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <SubTree ID="APEComponent" editable="true">
+            <input_port name="component_name"/>
+            <input_port name="hb_freq"/>
+            <input_port name="node_freq"/>
+            <inout_port name="dependency_graph"/>
+            <input_port name="hb_status"/>
+            <input_port name="clock"/>
+            <input_port name="current_phase"/>
+            <input_port name="image_degraded"/>
+            <inout_port name="lc_state"/>
+        </SubTree>
+        <SubTree ID="APEComponent2" editable="true">
+            <input_port name="component_name"/>
+            <input_port name="hb_freq"/>
+            <input_port name="node_freq"/>
+        </SubTree>
+        <SubTree ID="APEComponentV1" editable="true">
+            <input_port name="component_name"/>
+        </SubTree>
+        <Decorator ID="AnalysisDecorator" editable="true">
+            <input_port name="component_name"/>
+            <inout_port name="adaptations"/>
+            <input_port name="fails_2_redeploy"/>
+            <inout_port name="failed_adaptations"/>
+        </Decorator>
+        <Action ID="ExecuteCommunicationAdaptation" editable="true">
+            <input_port name="component_name"/>
+            <inout_port name="adaptations"/>
+            <inout_port name="failed_adaptations"/>
+        </Action>
+        <Action ID="ExecuteLifecycle" editable="true">
+            <input_port name="component_name"/>
+            <inout_port name="adaptations"/>
+            <inout_port name="failed_adaptations"/>
+            <output_port name="lc_state"/>
+        </Action>
+        <Action ID="ExecuteParametrization" editable="true">
+            <input_port name="component_name"/>
+            <inout_port name="adaptations"/>
+            <inout_port name="failed_adaptations"/>
+        </Action>
+        <Action ID="ExecuteRedeploy" editable="true">
+            <input_port name="component_name"/>
+            <inout_port name="adaptations"/>
+            <inout_port name="failed_adaptations"/>
+        </Action>
+        <Action ID="FillKnowledgeBase" editable="true"/>
+        <Action ID="InitializeBlackboard" editable="true">
+            <output_port name="dependency_graph"/>
+        </Action>
+        <Action ID="Monitoring" editable="true">
+            <output_port name="clock"/>
+        </Action>
+        <Decorator ID="PlanningDecorator" editable="true">
+            <input_port name="component_name"/>
+            <input_port name="dependency_graph"/>
+            <input_port name="hb_status"/>
+            <input_port name="clock"/>
+            <inout_port name="adaptations"/>
+            <input_port name="lc_state"/>
+        </Decorator>
+        <Action ID="ReadBlackboard" editable="true">
+            <input_port name="asdf" default="false"/>
+            <input_port name="need_lifecycle_change"/>
+        </Action>
+        <Action ID="RegisterAdaptation" editable="true">
+            <input_port name="component_name" default="{=}"/>
+            <input_port name="rule_name"/>
+            <input_port name="action"/>
+            <input_port name="parameter_name"/>
+            <input_port name="value" default="&quot;&quot;"/>
+            <inout_port name="adaptations">based on AAL</inout_port>
+        </Action>
+        <Action ID="SaySomething" editable="true">
+            <input_port name="text"/>
+        </Action>
+        <Condition ID="ScriptConditionWithMemory" editable="true">
+            <input_port name="code"/>
+        </Condition>
+        <Action ID="SendMessageToHMI" editable="true">
+            <input_port name="message"/>
+        </Action>
+        <Action ID="ThinkWhatToSay" editable="true">
+            <output_port name="text"/>
+        </Action>
+        <Action ID="UpdateClock" editable="true">
+            <output_port name="clock"/>
+        </Action>
+    </TreeNodesModel>
+</root>

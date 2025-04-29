@@ -1,0 +1,6 @@
+- is_gt_failure: true
+  name: image_degradation
+  stamp: 10
+  target_node: /managed_subsystem/camera
+  type: parameter_adaptation
+  value: 1.0

@@ -1,0 +1,19 @@
+- type: parameter_adaptation
+  target_node: /managed_subsystem/camera
+  name: image_degradation
+  value: 1.0
+  stamp: 10.0
+  is_gt_failure: True
+
+- type: change_flightphase
+  target_service: /environment/set_flightphase
+  value: 2
+  stamp: 20.0
+  is_gt_failure: False
+
+- type: parameter_adaptation
+  target_node: /managed_subsystem/camera
+  name: do_drop_rgb_camera
+  value: True
+  stamp: 30.0
+  is_gt_failure: True

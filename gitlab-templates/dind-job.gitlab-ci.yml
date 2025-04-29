@@ -1,0 +1,23 @@
+# This template provides a shortcut to have the docker-executable available for a gitlab-job
+# Precondition: gitlab must be configured to use "Docker in Docker": https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
+
+# Usage of this template: 
+# 1) add the following (without leading comments) in your .gitlab-ci.yml:
+#include: 
+#  - file: 'gitlab-templates/dind-job.gitlab-ci.yml'
+# 2) Then you can specify for each job in which docker-environment you want it to run: 
+#build-job:
+#  extends: 
+#    - .docker-in-docker
+#  script:
+#    - docker build . # now docker is available
+
+
+.docker-in-docker:
+  image: docker:${DOCKER_IMAGE_TAG}
+  services:
+    - docker:${DIND_IMAGE_TAG}
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_IMAGE_TAG: "27.3.1"  # Adapt this to the Docker-in-Docker configuration of your gitlab-instance
+    DIND_IMAGE_TAG: "${DOCKER_IMAGE_TAG}-dind"

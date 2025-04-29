@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4"
+      main_tree_to_execute="Main">
+  <BehaviorTree ID="APEComponent">
+    <Sequence>
+      <AnalysisDecorator component_name="{=}"
+                         adaptations="{=}"
+                         fails_2_redeploy="5"
+                         failed_adaptations="{=}">
+        <PlanningDecorator component_name="{=}"
+                           dependency_graph="{=}"
+                           hb_status="{=}"
+                           clock="{=}"
+                           adaptations="{=}"
+                           lc_state="{=}">
+          <Sequence>
+            <ExecuteRedeploy component_name="{=}"
+                             adaptations="{=}"
+                             failed_adaptations="{=}"/>
+            <ExecuteLifecycle component_name="{=}"
+                              adaptations="{=}"
+                              failed_adaptations="{=}"
+                              lc_state="{=}"/>
+            <ExecuteCommunicationAdaptation component_name="{=}"
+                                            adaptations="{=}"
+                                            failed_adaptations="{=}"/>
+            <ExecuteParametrization component_name="{=}"
+                                    adaptations="{=}"
+                                    failed_adaptations="{=}"/>
+          </Sequence>
+        </PlanningDecorator>
+      </AnalysisDecorator>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Main">
+    <Sequence>
+      <RunOnce then_skip="true">
+        <InitializeBlackboard dependency_graph="{=}"/>
+      </RunOnce>
+      <Monitoring clock="{=}"/>
+      <Parallel failure_count="1"
+                success_count="-1">
+        <SubTree ID="APEComponent"
+                 component_name="/managed_subsystem/camera"
+                 hb_freq="{camera_heartbeat_freq}"
+                 node_freq="{rgb_camera_freq}"
+                 dependency_graph="{=}"
+                 hb_status="{camera_heartbeat_status}"
+                 clock="{=}"
+                 current_phase="{=}"
+                 image_degraded="{=}"
+                 lc_state="{camera_lc_state}"/>
+        <SubTree ID="APEComponent"
+                 component_name="/managed_subsystem/depth"
+                 hb_freq="{depth_heartbeat_freq}"
+                 node_freq="{depth_camera_freq}"
+                 dependency_graph="{=}"
+                 hb_status="{depth_heartbeat_status}"
+                 clock="{=}"
+                 current_phase="{=}"
+                 image_degraded="{=}"
+                 lc_state="{lidar_lc_state}"/>
+      </Parallel>
+      <SubTree ID="APEComponent"
+               component_name="/managed_subsystem/image_enhancement"
+               hb_freq="{image_enhancement_heartbeat_freq}"
+               node_freq="{rgb_enhanced_freq}"
+               dependency_graph="{=}"
+               hb_status="{image_enhancement_heartbeat_status}"
+               clock="{=}"
+               current_phase="{=}"
+               image_degraded="{=}"
+               lc_state="{image_enhancement_lc_state}"/>
+      <SubTree ID="APEComponent"
+               component_name="/managed_subsystem/sensor_fusion"
+               hb_freq="{sensor_fusion_heartbeat_freq}"
+               node_freq="{sensors_fused_freq}"
+               dependency_graph="{=}"
+               hb_status="{sensor_fusion_heartbeat_status}"
+               clock="{=}"
+               current_phase="{=}"
+               image_degraded="{=}"
+               lc_state="{sensor_fusion_lc_state}"/>
+      <SubTree ID="APEComponent"
+               component_name="/managed_subsystem/segmentation"
+               hb_freq="{segmentation_heartbeat_freq}"
+               node_freq="{segmentation_freq}"
+               dependency_graph="{=}"
+               hb_status="{segmentation_heartbeat_status}"
+               clock="{=}"
+               current_phase="{=}"
+               image_degraded="{=}"
+               lc_state="{segmentation_lc_state}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <SubTree ID="APEComponent"
+             editable="true">
+      <input_port name="component_name"/>
+      <input_port name="hb_freq"/>
+      <input_port name="node_freq"/>
+      <inout_port name="dependency_graph"/>
+      <input_port name="hb_status"/>
+      <input_port name="clock"/>
+      <input_port name="current_phase"/>
+      <input_port name="image_degraded"/>
+      <inout_port name="lc_state"/>
+    </SubTree>
+    <Decorator ID="AnalysisDecorator"
+               editable="true">
+      <input_port name="component_name"/>
+      <inout_port name="adaptations"/>
+      <input_port name="fails_2_redeploy"/>
+      <inout_port name="failed_adaptations"/>
+    </Decorator>
+    <Action ID="ExecuteCommunicationAdaptation"
+            editable="true">
+      <input_port name="component_name"/>
+      <inout_port name="adaptations"/>
+      <inout_port name="failed_adaptations"/>
+    </Action>
+    <Action ID="ExecuteLifecycle"
+            editable="true">
+      <input_port name="component_name"/>
+      <inout_port name="adaptations"/>
+      <inout_port name="failed_adaptations"/>
+      <output_port name="lc_state"/>
+    </Action>
+    <Action ID="ExecuteParametrization"
+            editable="true">
+      <input_port name="component_name"/>
+      <inout_port name="adaptations"/>
+      <inout_port name="failed_adaptations"/>
+    </Action>
+    <Action ID="ExecuteRedeploy"
+            editable="true">
+      <input_port name="component_name"/>
+      <inout_port name="adaptations"/>
+      <inout_port name="failed_adaptations"/>
+    </Action>
+    <Action ID="InitializeBlackboard"
+            editable="true">
+      <output_port name="dependency_graph"/>
+    </Action>
+    <Action ID="Monitoring"
+            editable="true">
+      <output_port name="clock"/>
+    </Action>
+    <Decorator ID="PlanningDecorator"
+               editable="true">
+      <input_port name="component_name"/>
+      <input_port name="dependency_graph"/>
+      <input_port name="hb_status"/>
+      <input_port name="clock"/>
+      <inout_port name="adaptations"/>
+      <input_port name="lc_state"/>
+    </Decorator>
+  </TreeNodesModel>
+
+</root>

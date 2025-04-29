@@ -1,0 +1,52 @@
+BEGIN CONSTS
+    string const_flight_phase_approach approach
+    string const_flight_phase_cruise cruise
+    string const_flight_phase_descent descent
+    string const_flight_phase_final_approach final_approach
+    string const_flight_phase_landing landing
+    bool const_true true
+    double hb_freq_min
+    double node_freq_min
+    string enhanced_rgb_topic rgb_enhanced
+    string rgb_topic camera_rgb
+    string modality_fusion fusion
+    string modality_fusion rgb
+    string hb_degraded node_degraded
+    string hb_degraded node_failure
+END CONSTS
+BEGIN RULES
+    RULE init_sensor_fusion ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/sensor_fusion]
+    IF (current_phase == const_flight_phase_cruise)
+    THEN action_set_parameter modality modality_rgb
+
+    RULE activate_base_system ON_EVERY_TRIGGER
+    COMPONENTS [/managed_subsystem/camera, /managed_subsystem/sensor_fusion, /managed_subsystem/segmentation]
+    IF (current_phase == const_flight_phase_cruise)
+    THEN action_activate
+
+    RULE activate_depth ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/depth]
+    IF (current_phase == const_flight_phase_descent)
+    THEN action_activate
+
+    RULE adapt_sensor_fusion ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/sensor_fusion]
+    IF (current_phase == const_flight_phase_descent)
+    THEN action_set_parameter modality modality_fusion
+
+    RULE adapt_camera_topic ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/sensor_fusion]
+    IF (image_degraded == const_true)
+    THEN action_change_communication topic_camera_input enhanced_rgb_topic
+
+    RULE activate_image_enhancement ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/image_enhancement]
+    IF (image_degraded == const_true)
+    THEN action_activate
+
+    RULE redeploy_camera_on_message_drop ON_TRIGGER_CHANGE
+    COMPONENTS [/managed_subsystem/camera]
+    IF (node_freq < node_freq_min)
+    THEN action_redeploy
+END RULES

@@ -12,14 +12,6 @@ using AdaptationType = system_interfaces::msg::AdaptationType;
  */
 NodeStatus PlanningDecorator::tick()
 {
-    auto bb_dep_graph = getInput<std::pair<Graph,std::unordered_map<std::string, std::pair<Vertex, bool>>>>("dependency_graph");
-    if (!bb_dep_graph)
-    {
-        throw RuntimeError("Error getting input port [dependency_graph]", bb_dep_graph.error());
-    }
-    auto graph = bb_dep_graph.value().first;
-    auto vertex_map = bb_dep_graph.value().second;
-
     auto bb_adaptations = getInput<std::vector<system_interfaces::msg::GenericAdaptation>>("adaptations");
     if (!bb_adaptations)
     {
@@ -27,22 +19,6 @@ NodeStatus PlanningDecorator::tick()
     }
     std::vector<system_interfaces::msg::GenericAdaptation> adaptations = bb_adaptations.value();
 
-    auto bb_hb_status = getInput<int>("hb_status");
-    if (!bb_hb_status)
-    {
-        throw RuntimeError("Error getting input port [hb_status]", bb_hb_status.error());
-    }
-    int hb_status = bb_hb_status.value();
-
-    auto bb_clock = getInput<int>("clock");
-    if (!bb_clock)
-    {
-        throw RuntimeError("Error getting input port [clock]", bb_clock.error());
-    }
-    int current_time = bb_clock.value();
-
-    bool need_redeploy = false;
-    
     size_t redeployCount = adaptations_utils::countAdaptations(adaptations,std::vector<uint8_t>{AdaptationType::ACTION_REDEPLOY});
     auto splitAdaptations = adaptations_utils::splitAdaptations(adaptations, std::vector<uint8_t>{AdaptationType::ACTION_ACTIVATE, AdaptationType::ACTION_DEACTIVATE, AdaptationType::ACTION_RESTART});
     auto lcTransitions = splitAdaptations.first;
@@ -68,47 +44,8 @@ NodeStatus PlanningDecorator::tick()
 
     if (redeployCount > 0)
     {
-        need_redeploy = true;
         experiment_logger->info("Redeploy needed for " + component_name + " with adaptation count = " + std::to_string(adaptations.size()));
     }
-
-    if (hb_status == static_cast<int>(system_interfaces::msg::Heartbeat::HB_STATUS_OK) ||
-        hb_status == static_cast<int>(system_interfaces::msg::Heartbeat::HB_STATUS_FAILURE))
-    {
-        time_last_degraded = current_time;
-    }
-
-    // time in milliseconds, will be zero if we are currently degraded
-    int time_since_last_degradation = current_time - time_last_degraded;
-
-    if (hb_status == static_cast<int>(system_interfaces::msg::Heartbeat::HB_STATUS_OK)
-        || time_since_last_degradation > 1e3 // the time since we last were degraded is 1 second away
-        || time_last_degraded == -1) // default value, this node was until now never degraded
-    {
-        // set ourselves to not busy anymore if also the current time is more away from the last time we were degraded
-       vertex_map[component_name].second = false;
-    }
-
-    // If nodes we are dependent on, degraded, we will not do any lifecycle changes or redeploys or we are currently busy ourselves
-    if(areDependentNodesDegraded(vertex_map, graph, component_name) || vertex_map[component_name].second)
-    {
-        auto withoutLCChanges = adaptations_utils::splitAdaptations(adaptations, {AdaptationType::ACTION_ACTIVATE, AdaptationType::ACTION_DEACTIVATE, AdaptationType::ACTION_RESTART});
-        auto withoutCommChange = adaptations_utils::splitAdaptations(withoutLCChanges.second, {AdaptationType::ACTION_CHANGE_COMMUNICATION});
-        auto withoutRedeploy = adaptations_utils::splitAdaptations(withoutCommChange.second, {AdaptationType::ACTION_REDEPLOY});
-        experiment_logger->info("Setting only parametrization adaptations for " + component_name);
-        setOutput("adaptations", withoutRedeploy.second);
-    }
-    
-    // If we will be busy or are degraded, we will tell this to the other nodes
-    if (
-        need_redeploy == true || 
-        hb_status == static_cast<int>(system_interfaces::msg::Heartbeat::HB_STATUS_DEGRADED) || 
-        hb_status == static_cast<int>(system_interfaces::msg::Heartbeat::HB_STATUS_FAILURE))
-    {
-        vertex_map[component_name].second = true;
-    }
-
-    setOutput("dependency_graph", std::make_pair(graph, vertex_map));
 
     auto child_status = child_node_->executeTick();
     return child_status;
@@ -138,55 +75,4 @@ void PlanningDecorator::validateLifeCycleTransitions(std::vector<system_interfac
     {
         lcTransitions.erase(lcTransitions.begin());
     }
-}
-
-
-/**
- * @brief Identifies if any nodes that the current node is dependent on are degraded. This decision influences
- *        whether adaptation actions should be restricted to parametrization changes.
- *
- * @param vertex_map A map of vertex names to their corresponding Vertex objects and degradation statuses.
- * @param g The graph representing the dependency relationships between nodes.
- * @param vertex_name The name of the vertex (current node) to check dependencies for.
- * @return True if any dependent nodes are degraded, false otherwise.
- */ 
-bool PlanningDecorator::areDependentNodesDegraded(std::unordered_map<std::string, std::pair<Vertex, bool>>& vertex_map, Graph g, std::string vertex_name)
-{
-    Vertex startVertex = vertex_map.at(vertex_name).first;
-
-    // Check if the node itself is degraded
-    if (vertex_map.at(vertex_name).second) {
-        return true;
-    }
-
-    std::set<Vertex> visited;
-    std::deque<Vertex> queue; 
-    queue.push_back(startVertex);
-
-    while (!queue.empty()) {
-        Vertex currentVertex = queue.front();
-        queue.pop_front();
-
-        if (visited.find(currentVertex) != visited.end()) {
-            continue;
-        }
-        visited.insert(currentVertex);
-
-        // Iterate over outgoing edges - checking forward dependencies
-        Graph::out_edge_iterator out_i, out_end;
-        boost::tie(out_i, out_end) = boost::out_edges(currentVertex, g);
-        for (; out_i != out_end; ++out_i) {
-            Vertex targetVertex = boost::target(*out_i, g);
-
-            // Check if the vertex targets a degraded node
-            for (const auto& kv : vertex_map) {
-                if (kv.second.first == targetVertex && kv.second.second) {
-                    return true;
-                }
-            }
-
-            queue.push_back(targetVertex);
-        }
-    }
-    return false;
 }

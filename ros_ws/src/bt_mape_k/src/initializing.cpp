@@ -1,20 +1,6 @@
 #include <bt_mape_k/initializing.hpp>
 
 /**
- * @brief Adds a named vertex to the directed graph structure used for managing dependencies within the system.
- * 
- * @param name A string representing the name of the vertex to be added to the graph.
- * 
- * This function creates a new vertex within the graph and associates it with the given name. 
- * The vertex is stored in the vertex_map for future access and manipulation implementing the dependency graph used 
- * in the MAPE-K loop
- */
-void InitializeBlackboard::addVertexWithName(const std::string& name) {
-        Vertex v = boost::add_vertex(g);
-        vertex_map[name] = std::make_pair(v, false);
-    }
-
-/**
  * @brief Implements the behavior tree node's tick action to initialize the blackboard with data from a JSON file
  *        and build a directed graph representing component dependencies.
  * 
@@ -66,23 +52,6 @@ NodeStatus InitializeBlackboard::tick()
             blackboard_->set<bool>(key, bool_);
         }
     }
-
-    // Add nodes (vertices)
-    addVertexWithName(CAMERA_SENSOR);
-    addVertexWithName(LIDAR_SENSOR);
-    addVertexWithName(IMAGE_ENHANCEMENT);
-    addVertexWithName(SENSOR_FUSION);
-    addVertexWithName(SEGMENTATION);
-
-    // Add edges (directed)
-    boost::add_edge(vertex_map[IMAGE_ENHANCEMENT].first, vertex_map[CAMERA_SENSOR].first, g);
-    boost::add_edge(vertex_map[SENSOR_FUSION].first, vertex_map[CAMERA_SENSOR].first, g);
-    boost::add_edge(vertex_map[SENSOR_FUSION].first, vertex_map[LIDAR_SENSOR].first, g);
-    boost::add_edge(vertex_map[SENSOR_FUSION].first, vertex_map[IMAGE_ENHANCEMENT].first, g);
-    boost::add_edge(vertex_map[SEGMENTATION].first, vertex_map[SENSOR_FUSION].first, g);
-
-    setOutput("dependency_graph", std::make_pair(g, vertex_map));
-       
 
     return NodeStatus::SUCCESS;
  

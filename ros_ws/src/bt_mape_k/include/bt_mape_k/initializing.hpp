@@ -30,7 +30,6 @@ public:
     static PortsList providedPorts()
     {
         return {
-            OutputPort<std::pair<Graph,std::unordered_map<std::string, std::pair<Vertex, bool>>>>("dependency_graph")
         };
     }
 

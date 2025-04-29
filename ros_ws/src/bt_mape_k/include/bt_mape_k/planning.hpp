@@ -40,7 +40,6 @@ public:
             InputPort<int>("hb_status"),
             InputPort<int>("clock"),
             InputPort<int>("lc_state"),
-            BidirectionalPort<std::pair<Graph,std::unordered_map<std::string, std::pair<Vertex, bool>>>>("dependency_graph"),
             BidirectionalPort<std::vector<system_interfaces::msg::GenericAdaptation>>("adaptations"),
             BidirectionalPort<bool>("need_redeploy"),
          };
@@ -48,7 +47,6 @@ public:
     NodeStatus tick() override;
     
 private:
-    bool areDependentNodesDegraded(std::unordered_map<std::string, std::pair<Vertex, bool>>& vertex_map, Graph g, std::string vertex_name);
     void validateLifeCycleTransitions(std::vector<system_interfaces::msg::GenericAdaptation>& lcTransitions);
 
     // the timestamp when this node was last in a degraded or failure state

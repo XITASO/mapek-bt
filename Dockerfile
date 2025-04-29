@@ -41,4 +41,10 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /home/dockuser/.bashrc  &&  echo
 
 ADD ./ros_ws /ros_ws
 
+WORKDIR /
+
+COPY ./requirements.txt .
+
+RUN pip install -r requirements.txt
+
 WORKDIR /ros_ws

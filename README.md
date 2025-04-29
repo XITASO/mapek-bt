@@ -1,13 +1,8 @@
 # Combining Quality of Service and System Health Metrics in MAPE-K based ROS Systems through Behavior Trees
-[![pipeline status](https://gitlab.xitaso.com/engl/mapek-bt/badges/main/pipeline.svg)](https://gitlab.xitaso.com/engl/mapek-bt/-/commits/main)
-
 
 ![system_overview](./figures/system_overview.png)
 
-
 # Getting started
-
-[[_TOC_]]
 
 ## Requirements
 
@@ -42,6 +37,8 @@ Run the experiment from the root of the repository with
 bash ./ros_ws/evaluation/run_multi_experiment.sh
 ```
 The logs will be stored in a folder `log_dump` next to the ros_ws directory.
+
+If you want to reproduce the results for the experiment excluding the dependency graph, use the `exclude-dependency-graph` branch.
 
 ## Evaluation of log files
 To calculate the results in our table, for each table there are scripts in the [experiment_setup folder](./ros_ws/src/experiment_setup/experiment_setup/)
